@@ -2,6 +2,8 @@
   let //
     input = "",
     output = "",
+    deez = "DEEZ",
+    nuts = "NUTS",
     last_changed = 0;
 
   let transformer: Interchange | null = null;
@@ -12,34 +14,33 @@
   ]);
 
   function convert() {
-    if (last_changed === 0) {
-      // l -> r
-    } else {
-      // r -> l
+    if (!transformer) return;
+    try {
+      if (last_changed === 0) {
+        transformer.atob(input).then((res) => (output = res));
+      } else {
+        transformer.btoa(output).then((res) => (input = res));
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
-  async function onchange_transformer(e: { target: HTMLSelectElement }) {
+  async function onchange(e: { target: HTMLSelectElement }) {
     const mode = e.target.value;
-    // import transformer
-    transformer = await import(`./lib/${mode}.ts`);
+    transformer = (await import(`./lib/${mode}.ts`)).default;
+    const name = options.find((o) => o.mode === mode)?.name;
+    deez = name?.[0] || "DEEZ";
+    nuts = name?.[1] || "NUTS";
   }
 
-  function onchange_text(e: { target: HTMLElement }) {
-    // if input is changed, set to 0, else set to 1
-    last_changed = e.target.name === "input" ? 0 : 1;
-  }
+  const here = (e: Event) => (last_changed = e?.target?.id === "input" ? 0 : 1);
 </script>
 
 <main class="tc">
   <h1 class="fw1" style="font-size: 3rem;margin: 0.5em auto;">PHANTOM</h1>
   <div id="controls" class="f j-ar">
-    <select
-      class="m10 p5 b0 rx5"
-      name="mode"
-      id="mode"
-      on:change={onchange_transformer}
-    >
+    <select class="m10 p5 b0 rx5" name="mode" id="mode" on:change={onchange}>
       {#each options as option}
         <option value={option.mode}>
           {option.name.join("-").toLowerCase()}
@@ -57,23 +58,13 @@
   </div>
   <lt-split class="rx10" ratio="1:1">
     <div slot="a">
-      <h1>DEEZ</h1>
-      <textarea
-        class="rx10 b0"
-        name="input"
-        on:change={onchange_text}
-        id="input"
-        bind:value={input}
+      <h1>{deez}</h1>
+      <textarea class="rx10 b0" on:change={here} id="input" bind:value={input}
       ></textarea>
     </div>
     <div slot="b">
-      <h1>NUTS</h1>
-      <textarea
-        class="rx10 b0"
-        name="output"
-        on:change={onchange_text}
-        id="output"
-        bind:value={output}
+      <h1>{nuts}</h1>
+      <textarea class="rx10 b0" on:change={here} id="output" bind:value={output}
       ></textarea>
     </div>
   </lt-split>
