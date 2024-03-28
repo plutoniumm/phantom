@@ -1,22 +1,21 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { search, options } from "./utils";
+
   let //
+    select = 0,
     input = "",
     output = "",
     deez = "DEEZ",
     nuts = "NUTS",
-    last_changed = 0;
+    track = 0;
 
   let transformer: Interchange | null = null;
-
-  const options = Object.freeze([
-    { mode: null, name: ["", ""] },
-    { mode: "base64", name: ["Base64", "String"] },
-  ]);
 
   function convert() {
     if (!transformer) return;
     try {
-      if (last_changed === 0) {
+      if (track === 0) {
         transformer.atob(input).then((res) => (output = res));
       } else {
         transformer.btoa(output).then((res) => (input = res));
@@ -26,23 +25,38 @@
     }
   }
 
-  async function onchange(e: { target: HTMLSelectElement }) {
-    const mode = e.target.value;
-    transformer = (await import(`./lib/${mode}.ts`)).default;
-    const name = options.find((o) => o.mode === mode)?.name;
-    deez = name?.[0] || "DEEZ";
-    nuts = name?.[1] || "NUTS";
+  async function set(mode: any) {
+    if (typeof mode === "string") {
+      mode = options.find((o) => o.id === mode);
+    }
+
+    select = mode.id;
+    import(`./lib/${select}.ts`).then((m) => (transformer = m.default));
+    mode = mode.name;
+    deez = mode?.[0] || "DEEZ";
+    nuts = mode?.[1] || "NUTS";
   }
 
-  const here = (e: Event) => (last_changed = e?.target?.id === "input" ? 0 : 1);
+  onMount(() => {
+    const params = window.location.search.slice(1);
+    let res = search(options, params);
+    if (!res.length) return;
+    set(res[0].item);
+  });
 </script>
 
 <main class="tc">
   <h1 class="fw1" style="font-size: 3rem;margin: 0.5em auto;">PHANTOM</h1>
   <div id="controls" class="f j-ar">
-    <select class="m10 p5 b0 rx5" name="mode" id="mode" on:change={onchange}>
+    <select
+      class="m10 p5 b0 rx5"
+      name="mode"
+      id="mode"
+      bind:value={select}
+      on:change={(e) => set(e.target.value)}
+    >
       {#each options as option}
-        <option value={option.mode}>
+        <option value={option.id}>
           {option.name.join("-").toLowerCase()}
         </option>
       {/each}
@@ -59,22 +73,25 @@
   <lt-split class="rx10" ratio="1:1">
     <div slot="a">
       <h1>{deez}</h1>
-      <textarea class="rx10 b0" on:change={here} id="input" bind:value={input}
+      <textarea id="input" on:change={() => (track = 0)} bind:value={input}
       ></textarea>
     </div>
     <div slot="b">
       <h1>{nuts}</h1>
-      <textarea class="rx10 b0" on:change={here} id="output" bind:value={output}
+      <textarea id="output" on:change={() => (track = 1)} bind:value={output}
       ></textarea>
     </div>
   </lt-split>
 </main>
 
 <style lang="scss">
-  button {
-    background: #fff;
+  button,
+  select {
+    background: #eef;
     font-size: 18px;
     min-width: 100px;
+  }
+  button {
     svg {
       height: 18px;
       width: 18px;
@@ -85,19 +102,19 @@
       top: 3px;
     }
   }
-  select {
-    min-width: 100px;
-    font-size: 18px;
-  }
   lt-split {
     margin: 10px;
     min-height: min(600px, 60vh);
     border: 1px solid #888;
   }
   textarea {
+    font-family: monospace;
+    background: #ccc;
     margin: 10px auto;
-    background: #fff;
     min-height: 300px;
     width: 90%;
+    border-radius: 10px;
+    padding: 10px;
+    border: 0;
   }
 </style>
