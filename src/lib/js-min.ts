@@ -1,8 +1,14 @@
-import Ug from 'uglify-js';
+import estree from "prettier/plugins/estree";
+import babel from "prettier/plugins/babel";
+import { format } from 'prettier/standalone';
+import { minify } from "terser";
 
-const html: Interchange = {
-  atob: async (a: string) => a,
-  btoa: async (a: string) => Ug.minify(a)
+const interchange: Interchange = {
+  atob: async (a: string) => format(a, {
+    parser: "babel", plugins: [babel, estree]
+  }),
+  // TODO: add error if minify fails
+  btoa: async (a: string) => minify(a).then((res) => res?.code || a),
 };
 
-export default html;
+export default interchange;

@@ -1,11 +1,9 @@
 {
-  "name": "phantom",
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deploy": "gh-pages -d dist -t true"
+    "deploy": "gh-pages -d dist -t true && rm -rf dist"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
@@ -18,9 +16,17 @@
     "vite": "^5.2.0"
   },
   "dependencies": {
+    "@babel/parser": "^7.24.1",
+    "angular-html-parser": "^5.2.0",
+    "babel": "^6.23.0",
     "clean-css": "^5.3.3",
     "fuse.js": "^7.0.0",
     "html-minifier": "^4.0.0",
-    "uglify-js": "^3.17.4"
+    "html-minifier-terser": "^7.2.0",
+    "postcss": "^8.4.38",
+    "postcss-scss": "^4.0.9",
+    "prettier": "^3.2.5",
+    "terser": "^5.30.0",
+    "yaml": "^2.4.1"
   }
 }
